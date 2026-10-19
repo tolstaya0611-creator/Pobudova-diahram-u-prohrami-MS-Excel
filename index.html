@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="uk" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест "Побудова діаграм у програмі MS Excel"</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        },
+                        excel: {
+                            50: '#f2f9f5',
+                            100: '#e1f2e6',
+                            600: '#107c41', // Signature Excel Green
+                            700: '#0b5a2f',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .custom-radio:checked + label {
+            border-color: #107c41;
+            background-color: #f2f9f5;
+        }
+        .custom-radio:checked + label .radio-dot {
+            border-color: #107c41;
+            background-color: #107c41;
+        }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased selection:bg-excel-600 selection:text-white flex flex-col justify-between">
+
+    <!-- Header Section -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-excel-600 text-white flex items-center justify-center font-bold text-xl shadow">
+                    <i class="fa-solid font-mono">X</i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold text-slate-900 leading-tight">Побудова діаграм у програмі MS Excel</h1>
+                    <p class="text-xs text-slate-500">Інтерактивний підсумковий тест</p>
+                </div>
+            </div>
+            <div id="quiz-progress-badge" class="hidden sm:flex items-center px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-600">
+                Питання <span id="current-q-num" class="text-excel-600 px-1">1</span> з 12
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-100 h-1.5">
+            <div id="progress-bar" class="bg-excel-600 h-1.5 transition-all duration-300" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow">
+
+        <!-- Welcome View -->
+        <div id="welcome-screen" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-10 text-center max-w-2xl mx-auto my-6">
+            <div class="w-20 h-20 bg-excel-50 text-excel-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl border border-excel-100 shadow-inner">
+                <i class="fa-solid fa-chart-column"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 mb-3">Готові перевірити свої знання?</h2>
+            <p class="text-slate-600 mb-8 leading-relaxed">
+                Тест містить <strong>12 запитань</strong> з побудови та аналізу діаграм в MS Excel. 
+                Після завершення ви дізнаєтесь відсоток правильних відповідей та отримаєте детальну оцінку.
+            </p>
+            <button id="start-btn" class="w-full sm:w-auto px-8 py-3.5 bg-excel-600 hover:bg-excel-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition duration-200 flex items-center justify-center mx-auto space-x-2 group">
+                <span>Розпочати тест</span>
+                <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+            </button>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-screen" class="hidden">
+            <form id="quiz-form" onsubmit="event.preventDefault();">
+                <div id="questions-container" class="space-y-8">
+                    <!-- Dynamic Questions injected by JS -->
+                </div>
+
+                <!-- Submit Button Area -->
+                <div class="mt-10 pt-6 border-t border-slate-200 flex justify-end">
+                    <button id="submit-btn" type="button" class="px-8 py-3.5 bg-excel-600 hover:bg-excel-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition duration-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-check-double"></i>
+                        <span>Завершити тест та отримати результат</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-10 text-center max-w-2xl mx-auto my-6">
+            <div id="score-circle" class="w-32 h-32 rounded-full flex flex-col items-center justify-center mx-auto mb-6 border-4 shadow-sm transition-all">
+                <span id="score-percentage" class="text-3xl font-black">0%</span>
+                <span id="score-fraction" class="text-xs font-medium text-slate-500">0 з 12</span>
+            </div>
+
+            <h2 id="result-title" class="text-2xl font-bold text-slate-900 mb-2"></h2>
+            <p id="result-message" class="text-slate-600 mb-8 leading-relaxed"></p>
+
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-left mb-8 space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-600">Всього запитань:</span>
+                    <span class="font-bold text-slate-800">12</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-600">Правильних відповідей:</span>
+                    <span id="correct-count" class="font-bold text-emerald-600">0</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-600">Неправильних відповідей:</span>
+                    <span id="incorrect-count" class="font-bold text-rose-600">0</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button id="restart-btn" class="px-6 py-3 bg-excel-600 hover:bg-excel-700 text-white font-semibold rounded-xl shadow transition duration-200 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Пройти знову</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <div class="max-w-4xl mx-auto px-4">
+            Тестова система MS Excel &copy; Інформатика. Усі права захищено.
+        </div>
+    </footer>
+
+    <!-- Quiz Logic & Data Script -->
+    <script>
+        // Questions Data Array
+        const questionsData = [
+            {
+                id: 1,
+                question: "Виберіть із запропонованого списку кнопку, яка дає змогу побудувати діаграму або графік?",
+                options: [
+                    {
+                        type: 'svg',
+                        content: `<svg class="w-7 h-7 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 014 9 15.3 15.3 0 01-4 9 15.3 15.3 0 01-4-9 15.3 15.3 0 014-9z"></path></svg>`
+                    },
+                    {
+                        type: 'svg',
+                        content: `<div class="font-serif font-bold text-xl text-slate-800 flex items-center">∑ <span class="text-xs ml-1 font-sans">▼</span></div>`
+                    },
+                    {
+                        type: 'svg',
+                        content: `<div class="font-serif font-bold text-lg text-blue-700">√α</div>`
+                    },
+                    {
+                        type: 'svg',
+                        content: `<div class="flex items-end space-x-0.5 bg-gradient-to-t from-slate-200 to-slate-100 p-1.5 rounded border border-slate-300 shadow-sm"><div class="w-2 h-3 bg-amber-500 rounded-t-sm"></div><div class="w-2 h-5 bg-sky-500 rounded-t-sm"></div><div class="w-2 h-4 bg-rose-500 rounded-t-sm"></div></div>`
+                    }
+                ],
+                correct: 3
+            },
+            {
+                id: 2,
+                question: "Визначте тип схематично зображеної діаграми:",
+                diagram: `
+                    <div class="bg-white p-4 border border-slate-300 rounded-lg max-w-md mx-auto my-3 shadow-inner">
+                        <div class="h-44 flex items-end justify-around border-l-2 border-b-2 border-slate-600 pl-4 pb-2 relative">
+                            <!-- Y-Axis labels -->
+                            <div class="absolute -left-8 top-0 text-xs text-slate-500">120</div>
+                            <div class="absolute -left-8 top-1/4 text-xs text-slate-500">100</div>
+                            <div class="absolute -left-8 top-2/4 text-xs text-slate-500">80</div>
+                            <div class="absolute -left-8 top-3/4 text-xs text-slate-500">20</div>
+                            <div class="absolute -left-6 bottom-0 text-xs text-slate-500">0</div>
+                            <!-- Gridlines -->
+                            <div class="absolute w-full top-0 border-b border-slate-200 border-dashed"></div>
+                            <div class="absolute w-full top-1/4 border-b border-slate-200 border-dashed"></div>
+                            <div class="absolute w-full top-2/4 border-b border-slate-200 border-dashed"></div>
+                            <div class="absolute w-full top-3/4 border-b border-slate-200 border-dashed"></div>
+                            <!-- Bars -->
+                            <div class="w-12 bg-blue-600 h-[91%] rounded-t-xs z-10"></div>
+                            <div class="w-12 bg-blue-600 h-[83%] rounded-t-xs z-10"></div>
+                            <div class="w-12 bg-blue-600 h-[8%] rounded-t-xs z-10"></div>
+                        </div>
+                        <div class="flex justify-around pt-2 text-xs font-semibold text-slate-700 pl-4">
+                            <span>1</span><span>2</span><span>3</span>
+                        </div>
+                    </div>
+                `,
+                options: ["лінійчата", "графік", "гістограма", "точкова"],
+                correct: 2
+            },
+            {
+                id: 3,
+                question: "Дано фрагмент електронної таблиці. Яке число повинно бути в клітинці B1, щоб побудована по значенням A2:D2 діаграма мала вигляд:",
+                diagram: `
+                    <div class="bg-white p-4 border border-slate-300 rounded-lg max-w-md mx-auto my-3 flex flex-col sm:flex-row items-center justify-around gap-4 shadow-inner">
+                        <!-- SVG Pie Chart -->
+                        <div class="w-28 h-28 relative flex-shrink-0">
+                            <svg viewBox="0 0 32 32" class="w-full h-full rounded-full transform -rotate-90">
+                                <circle r="16" cx="16" cy="16" fill="#3b82f6" stroke-dasharray="50 100" />
+                                <circle r="16" cx="16" cy="16" fill="#f97316" stroke-dasharray="16.66 100" stroke-dashoffset="-50" />
+                                <circle r="16" cx="16" cy="16" fill="#9ca3af" stroke-dasharray="16.66 100" stroke-dashoffset="-66.66" />
+                                <circle r="16" cx="16" cy="16" fill="#eab308" stroke-dasharray="16.66 100" stroke-dashoffset="-83.32" />
+                            </svg>
+                        </div>
+                        <!-- Table display -->
+                        <div class="text-xs overflow-x-auto">
+                            <div class="font-bold text-center mb-1 text-slate-700">Фрагмент таблиці</div>
+                            <table class="border-collapse border border-slate-400 bg-white text-center">
+                                <thead>
+                                    <tr class="bg-slate-100">
+                                        <th class="border border-slate-300 px-2 py-1"></th>
+                                        <th class="border border-slate-300 px-2 py-1 font-semibold">A</th>
+                                        <th class="border border-slate-300 px-2 py-1 font-semibold">B</th>
+                                        <th class="border border-slate-300 px-2 py-1 font-semibold">C</th>
+                                        <th class="border border-slate-300 px-2 py-1 font-semibold">D</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border border-slate-300 px-2 py-1 bg-slate-100 font-semibold">1</td>
+                                        <td class="border border-slate-300 px-2 py-1">3</td>
+                                        <td class="border border-slate-300 px-2 py-1 font-bold bg-amber-100">?</td>
+                                        <td class="border border-slate-300 px-2 py-1">3</td>
+                                        <td class="border border-slate-300 px-2 py-1">2</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border border-slate-300 px-2 py-1 bg-slate-100 font-semibold">2</td>
+                                        <td class="border border-slate-300 px-2 py-1 font-mono text-[10px]">=(C1+A1)/2</td>
+                                        <td class="border border-slate-300 px-2 py-1 font-mono text-[10px]">=C1-D1</td>
+                                        <td class="border border-slate-300 px-2 py-1 font-mono text-[10px]">=A1-D1</td>
+                                        <td class="border border-slate-300 px-2 py-1 font-mono text-[10px]">=B1/2</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `,
+                options: ["2", "1", "4", "3"],
+                correct: 0
+            },
+            {
+                id: 4,
+                question: "Визначити властивості діаграми:",
+                options: [
+                    "ім'я, кількість аркушів, порядок розташування аркушів",
+                    "ім'я, кількість розміщених об'єктів та їх вигляд, фон заливки, наявність захисту, колір ярлика",
+                    "тип, назва, розмір області діаграми, колір заливки",
+                    "наявність сітки, тип нумерації стовпців і рядків"
+                ],
+                correct: 2
+            },
+            {
+                id: 5,
+                question: "Дано фрагмент електронної таблиці:\nПісля виконання обчислення була побудована діаграма за значеннями діапазону клітинок A2:D2. Укажіть діаграму, яка вийшла.",
+                diagram: `
+                    <div class="bg-white p-4 border border-slate-300 rounded-lg max-w-md mx-auto my-3 shadow-inner">
+                        <table class="border-collapse border border-slate-400 bg-white text-center w-full text-xs mb-4">
+                            <thead>
+                                <tr class="bg-slate-100">
+                                    <th class="border border-slate-300 px-2 py-1"></th>
+                                    <th class="border border-slate-300 px-2 py-1 font-semibold">A</th>
+                                    <th class="border border-slate-300 px-2 py-1 font-semibold">B</th>
+                                    <th class="border border-slate-300 px-2 py-1 font-semibold">C</th>
+                                    <th class="border border-slate-300 px-2 py-1 font-semibold">D</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-slate-300 px-2 py-1 bg-slate-100 font-semibold">1</td>
+                                    <td class="border border-slate-300 px-2 py-1"></td>
+                                    <td class="border border-slate-300 px-2 py-1">3</td>
+                                    <td class="border border-slate-300 px-2 py-1">4</td>
+                                    <td class="border border-slate-300 px-2 py-1"></td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-slate-300 px-2 py-1 bg-slate-100 font-semibold">2</td>
+                                    <td class="border border-slate-300 px-2 py-1 font-mono text-[11px]">=C1-B1</td>
+                                    <td class="border border-slate-300 px-2 py-1 font-mono text-[11px]">=B1-A2*2</td>
+                                    <td class="border border-slate-300 px-2 py-1 font-mono text-[11px]">=C1/2</td>
+                                    <td class="border border-slate-300 px-2 py-1 font-mono text-[11px]">=B1+B2</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="grid grid-cols-2 gap-3 text-center">
+                            <div class="border p-2 rounded bg-slate-50 flex flex-col items-center">
+                                <span class="font-bold text-xs mb-1">1</span>
+                                <div class="w-full h-20 border-l border-b border-slate-400 flex flex-col justify-around py-1 pl-1">
+                                    <div class="h-2 bg-blue-600 w-1/4"></div>
+                                    <div class="h-2 bg-blue-600 w-1/4"></div>
+                                    <div class="h-2 bg-blue-600 w-2/4"></div>
+                                    <div class="h-2 bg-blue-600 w-full"></div>
+                                </div>
+                            </div>
+                            <div class="border p-2 rounded bg-slate-50 flex flex-col items-center">
+                                <span class="font-bold text-xs mb-1">2</span>
+                                <div class="w-16 h-16 rounded-full relative overflow-hidden my-auto">
+                                    <svg viewBox="0 0 32 32" class="w-full h-full transform -rotate-90">
+                                        <circle r="16" cx="16" cy="16" fill="#3b82f6" stroke-dasharray="35 100" />
+                                        <circle r="16" cx="16" cy="16" fill="#ef4444" stroke-dasharray="30 100" stroke-dashoffset="-35" />
+                                        <circle r="16" cx="16" cy="16" fill="#84cc16" stroke-dasharray="20 100" stroke-dashoffset="-65" />
+                                        <circle r="16" cx="16" cy="16" fill="#a855f7" stroke-dasharray="15 100" stroke-dashoffset="-85" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="border p-2 rounded bg-slate-50 flex flex-col items-center">
+                                <span class="font-bold text-xs mb-1">3</span>
+                                <div class="w-full h-20 border-l border-b border-slate-400 flex flex-col justify-around py-1 pl-1">
+                                    <div class="h-2 bg-blue-600 w-full"></div>
+                                    <div class="h-2 bg-blue-600 w-full"></div>
+                                    <div class="h-2 bg-blue-600 w-2/4"></div>
+                                    <div class="h-2 bg-blue-600 w-2/4"></div>
+                                </div>
+                            </div>
+                            <div class="border p-2 rounded bg-slate-50 flex flex-col items-center">
+                                <span class="font-bold text-xs mb-1">4</span>
+                                <div class="w-16 h-16 rounded-full relative overflow-hidden my-auto">
+                                    <svg viewBox="0 0 32 32" class="w-full h-full transform -rotate-90">
+                                        <circle r="16" cx="16" cy="16" fill="#a855f7" stroke-dasharray="50 100" />
+                                        <circle r="16" cx="16" cy="16" fill="#84cc16" stroke-dasharray="25 100" stroke-dashoffset="-50" />
+                                        <circle r="16" cx="16" cy="16" fill="#ef4444" stroke-dasharray="12.5 100" stroke-dashoffset="-75" />
+                                        <circle r="16" cx="16" cy="16" fill="#3b82f6" stroke-dasharray="12.5 100" stroke-dashoffset="-87.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                options: ["1", "2", "3", "4"],
+                correct: 0
+            },
+            {
+                id: 6,
+                question: "Дано фрагмент електронної таблиці:\nПісля виконання обчислення була побудована діаграма за значеннями діапазону клітинок A1:A4. Укажіть діаграму, яка вийшла.",
+                diagram: `
+                    <div class="bg-white p-4 border border-slate-300 rounded-lg max-w-md mx-auto my-3 shadow-inner">
+                        <table class="border-collapse border border-slate-400 bg-white text-center w-full text-xs mb-4">
+                            <thead>
+                                <tr class="bg-slate-100">
+                                    <th class="border border-slate-300 px-2 py-1"></th>
+                                    <th class="border border-slate-300 px-2 py-1 font-semibold">A</th>
+                                    <th class="border border-slate-300 px-2 py-1 font-semibold">B</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-slate-300 px-2 py-1 bg-slate-100 font-semibold">1</td>
+                                    <td class="border border-slate-300 px-2 py-1 font-mono text-[11px]">=B1+1</td>
+                                    <td class="border border-slate-300 px-2 py-1">1</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-slate-300 px-2 py-1 bg-slate-100 font-semibold">2</td>
+                                    <td class="border border-slate-300 px-2 py-1 font-mono text-[11px]">=A1+2</td>
+                                    <td class="border border-slate-300 px-2 py-1">2</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-slate-300 px-2 py-1 bg-slate-100 font-semibold">3</td>
+                                    <td class="border border-slate-300 px-2 py-1 font-mono text-[11px]">=B2-1</td>
+                                    <td class="border border-slate-300 px-2 py-1"></td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-slate-300 px-2 py-1 bg-slate-100 font-semibold">4</td>
+                                    <td class="border border-slate-300 px-2 py-1 font-mono text-[11px]">=A3</td>
+                                    <td class="border border-slate-300 px-2 py-1"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="grid grid-cols-2 gap-3 text-center">
+                            <div class="border p-2 rounded bg-slate-50 flex flex-col items-center">
+                                <span class="font-bold text-xs mb-1">1</span>
+                                <div class="w-full h-20 border-l border-b border-slate-400 flex items-end justify-around pb-0.5">
+                                    <div class="w-3 bg-blue-600 h-[50%]"></div>
+                                    <div class="w-3 bg-blue-600 h-[100%]"></div>
+                                    <div class="w-3 bg-blue-600 h-[25%]"></div>
+                                    <div class="w-3 bg-blue-600 h-[75%]"></div>
+                                </div>
+                            </div>
+                            <div class="border p-2 rounded bg-slate-50 flex flex-col items-center">
+                                <span class="font-bold text-xs mb-1">2</span>
+                                <div class="w-16 h-16 rounded-full relative overflow-hidden my-auto">
+                                    <svg viewBox="0 0 32 32" class="w-full h-full transform -rotate-90">
+                                        <circle r="16" cx="16" cy="16" fill="#3b82f6" stroke-dasharray="25 100" />
+                                        <circle r="16" cx="16" cy="16" fill="#ef4444" stroke-dasharray="50 100" stroke-dashoffset="-25" />
+                                        <circle r="16" cx="16" cy="16" fill="#84cc16" stroke-dasharray="12.5 100" stroke-dashoffset="-75" />
+                                        <circle r="16" cx="16" cy="16" fill="#a855f7" stroke-dasharray="12.5 100" stroke-dashoffset="-87.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="border p-2 rounded bg-slate-50 flex flex-col items-center">
+                                <span class="font-bold text-xs mb-1">3</span>
+                                <div class="w-full h-20 border-l border-b border-slate-400 flex items-end justify-around pb-0.5">
+                                    <div class="w-3 bg-blue-600 h-[40%]"></div>
+                                    <div class="w-3 bg-blue-600 h-[75%]"></div>
+                                    <div class="w-3 bg-blue-600 h-[100%]"></div>
+                                    <div class="w-3 bg-blue-600 h-[60%]"></div>
+                                </div>
+                            </div>
+                            <div class="border p-2 rounded bg-slate-50 flex flex-col items-center">
+                                <span class="font-bold text-xs mb-1">4</span>
+                                <div class="w-16 h-16 rounded-full relative overflow-hidden my-auto">
+                                    <svg viewBox="0 0 32 32" class="w-full h-full transform -rotate-90">
+                                        <circle r="16" cx="16" cy="16" fill="#3b82f6" stroke-dasharray="37.5 100" />
+                                        <circle r="16" cx="16" cy="16" fill="#ef4444" stroke-dasharray="37.5 100" stroke-dashoffset="-37.5" />
+                                        <circle r="16" cx="16" cy="16" fill="#84cc16" stroke-dasharray="12.5 100" stroke-dashoffset="-75" />
+                                        <circle r="16" cx="16" cy="16" fill="#a855f7" stroke-dasharray="12.5 100" stroke-dashoffset="-87.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                options: ["1", "2", "3", "4"],
+                correct: 0
+            },
+            {
+                id: 7,
+                question: "Діаграми MS Excel - це ...",
+                options: [
+                    "інструмент, призначений для відображення на екрані записів таблиці, значення в яких відповідають умовам, заданим користувачем",
+                    "інструмент, призначений для розташування даних вихідної таблиці в найбільш зручному для користувача вигляді",
+                    "інструмент, призначений для графічного представлення даних з вихідної таблиці",
+                    "інструмент, призначений для обчислень"
+                ],
+                correct: 2
+            },
+            {
+                id: 8,
+                question: "Набір зв'язаних між собою точок даних, які відображаються на діаграмі MS Excel, утворює ...",
+                options: ["вісь категорій", "вісь значень", "ряд даних", "легенду"],
+                correct: 2
+            },
+            {
+                id: 9,
+                question: "Який тип діаграм доцільніше використовувати для порівняння кількості учнів у різних класах?",
+                options: ["гістограма", "кругова", "графік", "пелюсткова"],
+                correct: 0
+            },
+            {
+                id: 10,
+                question: "Як називається елемент діаграми, в якому розшифровуються кольори, виділені рядом даних?",
+                options: ["заголовок", "вісь категорій", "вісь значень", "легенда"],
+                correct: 3
+            },
+            {
+                id: 11,
+                question: "Який тип діаграм доцільніше використати для відображення зміни курсу валюти?",
+                options: ["графік", "гістограма", "кругова", "пелюсткова"],
+                correct: 0
+            },
+            {
+                id: 12,
+                question: "Укажіть тип діаграми, яку зображено на малюнку:",
+                diagram: `
+                    <div class="bg-white p-4 border border-slate-300 rounded-lg max-w-lg mx-auto my-3 shadow-inner">
+                        <div class="text-center font-bold text-xs md:text-sm text-slate-800 mb-3">
+                            Відповідність керівника визначеним критеріям ідеального представника влади
+                        </div>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex items-center">
+                                <span class="w-28 text-right pr-2 truncate font-medium text-slate-600">Відповідальність</span>
+                                <div class="flex-grow space-y-0.5">
+                                    <div class="bg-rose-500 h-2 rounded-r text-[9px] text-white pl-1 flex items-center" style="width: 15.2%">15.2%</div>
+                                    <div class="bg-sky-600 h-2 rounded-r text-[9px] text-white pl-1 flex items-center" style="width: 98.1%">98.1%</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-28 text-right pr-2 truncate font-medium text-slate-600">Чесність</span>
+                                <div class="flex-grow space-y-0.5">
+                                    <div class="bg-rose-500 h-2 rounded-r text-[9px] text-white pl-1 flex items-center" style="width: 8.8%">8.8%</div>
+                                    <div class="bg-sky-600 h-2 rounded-r text-[9px] text-white pl-1 flex items-center" style="width: 97.6%">97.6%</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-28 text-right pr-2 truncate font-medium text-slate-600">Компетентність</span>
+                                <div class="flex-grow space-y-0.5">
+                                    <div class="bg-rose-500 h-2 rounded-r text-[9px] text-white pl-1 flex items-center" style="width: 20.5%">20.5%</div>
+                                    <div class="bg-sky-600 h-2 rounded-r text-[9px] text-white pl-1 flex items-center" style="width: 96.7%">96.7%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-center space-x-4 mt-3 text-[11px]">
+                            <span class="flex items-center"><span class="w-2.5 h-2.5 bg-rose-500 mr-1 rounded-xs"></span> Поточна оцінка</span>
+                            <span class="flex items-center"><span class="w-2.5 h-2.5 bg-sky-600 mr-1 rounded-xs"></span> Бажаний рівень</span>
+                        </div>
+                    </div>
+                `,
+                options: ["гістограма", "пелюсткова", "бульбашкова", "лінійчата"],
+                correct: 3
+            }
+        ];
+
+        // State variables
+        let userAnswers = {};
+
+        // DOM Elements
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const questionsContainer = document.getElementById('questions-container');
+        const startBtn = document.getElementById('start-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const currentQNum = document.getElementById('current-q-num');
+
+        // Start Quiz Action
+        startBtn.addEventListener('click', () => {
+            welcomeScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            renderQuestions();
+            updateProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Render Questions dynamically
+        function renderQuestions() {
+            questionsContainer.innerHTML = '';
+
+            questionsData.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-5 md:p-8 shadow-sm border border-slate-200 transition-all";
+                card.id = `question-card-${q.id}`;
+
+                let optionsHTML = '';
+                q.options.forEach((opt, optIndex) => {
+                    const isSvg = typeof opt === 'object' && opt.type === 'svg';
+                    const optionContent = isSvg ? opt.content : opt;
+
+                    optionsHTML += `
+                        <div class="relative">
+                            <input type="radio" 
+                                   id="q${q.id}_opt${optIndex}" 
+                                   name="question_${q.id}" 
+                                   value="${optIndex}" 
+                                   class="custom-radio sr-only"
+                                   onchange="handleAnswerChange(${q.id}, ${optIndex})">
+                            <label for="q${q.id}_opt${optIndex}" 
+                                   class="flex items-center p-3.5 md:p-4 rounded-xl border border-slate-200 cursor-pointer hover:border-slate-300 hover:bg-slate-50/80 transition-all duration-150 group">
+                                <span class="radio-dot w-5 h-5 rounded-full border-2 border-slate-300 mr-3 flex-shrink-0 flex items-center justify-center transition-colors">
+                                    <span class="w-2 h-2 rounded-full bg-white opacity-0 transition-opacity"></span>
+                                </span>
+                                <span class="text-sm md:text-base font-medium text-slate-700 group-hover:text-slate-900">${optionContent}</span>
+                            </label>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-4">
+                        <span class="text-xs font-bold uppercase tracking-wider text-excel-600 bg-excel-50 px-2.5 py-1 rounded-md border border-excel-100">
+                            Питання ${index + 1} з ${questionsData.length}
+                        </span>
+                    </div>
+                    <h3 class="text-base md:text-lg font-semibold text-slate-900 mb-3 whitespace-pre-line leading-snug">
+                        ${q.question}
+                    </h3>
+                    ${q.diagram ? q.diagram : ''}
+                    <div class="grid grid-cols-1 ${q.options[0] && typeof q.options[0] === 'object' ? 'grid-cols-2 sm:grid-cols-4' : ''} gap-3 mt-4">
+                        ${optionsHTML}
+                    </div>
+                `;
+
+                questionsContainer.appendChild(card);
+            });
+        }
+
+        // Handle answer selection
+        window.handleAnswerChange = function(questionId, selectedIdx) {
+            userAnswers[questionId] = selectedIdx;
+            updateProgress();
+        };
+
+        // Update progress bar & header indicators
+        function updateProgress() {
+            const answeredCount = Object.keys(userAnswers).length;
+            const percentage = (answeredCount / questionsData.length) * 100;
+            progressBar.style.width = `${percentage}%`;
+            currentQNum.textContent = Math.min(answeredCount + 1, questionsData.length);
+        }
+
+        // Calculate and display results
+        submitBtn.addEventListener('click', () => {
+            const total = questionsData.length;
+            const answeredCount = Object.keys(userAnswers).length;
+
+            if (answeredCount < total) {
+                if (!confirm(`Ви відповіли лише на ${answeredCount} з ${total} питань. Бажаєте завершити тест?`)) {
+                    return;
+                }
+            }
+
+            let correctCount = 0;
+
+            questionsData.forEach(q => {
+                const userChoice = userAnswers[q.id];
+                const card = document.getElementById(`question-card-${q.id}`);
+
+                if (userChoice !== undefined && userChoice === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            const scorePercent = Math.round((correctCount / total) * 100);
+
+            // Display Results Screen
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+
+            document.getElementById('score-percentage').textContent = `${scorePercent}%`;
+            document.getElementById('score-fraction').textContent = `${correctCount} з ${total}`;
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('incorrect-count').textContent = total - correctCount;
+
+            const scoreCircle = document.getElementById('score-circle');
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+
+            if (scorePercent >= 90) {
+                scoreCircle.className = "w-32 h-32 rounded-full flex flex-col items-center justify-center mx-auto mb-6 border-4 shadow-sm bg-emerald-50 border-emerald-500 text-emerald-600";
+                resultTitle.textContent = "Відмінно! 🏆";
+                resultMessage.textContent = "Ви чудово орієнтуєтеся в роботі з діаграмами MS Excel!";
+            } else if (scorePercent >= 65) {
+                scoreCircle.className = "w-32 h-32 rounded-full flex flex-col items-center justify-center mx-auto mb-6 border-4 shadow-sm bg-blue-50 border-blue-500 text-blue-600";
+                resultTitle.textContent = "Добре! 👍";
+                resultMessage.textContent = "Ви володієте основними навичками побудови діаграм, але є прогалини.";
+            } else {
+                scoreCircle.className = "w-32 h-32 rounded-full flex flex-col items-center justify-center mx-auto mb-6 border-4 shadow-sm bg-amber-50 border-amber-500 text-amber-600";
+                resultTitle.textContent = "Потрібно повторити матеріали 📚";
+                resultMessage.textContent = "Рекомендуємо ще раз переглянути тему побудови та аналізу діаграм в Excel.";
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Restart Quiz
+        restartBtn.addEventListener('click', () => {
+            userAnswers = {};
+            resultsScreen.classList.add('hidden');
+            welcomeScreen.classList.remove('hidden');
+            progressBar.style.width = '0%';
+        });
+    </script>
+</body>
+</html>
